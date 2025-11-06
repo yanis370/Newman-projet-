@@ -28,4 +28,10 @@ jobs:
       - name: Installation de Newman + HTML Extra Reporter
         run: npm install -g newman newman-reporter-html
 
+      - name: Lancement de Newman
+        run: |
+          newman run "./postman/collection.postman_collection.json" \
+          -e "./postman/environnement.postman_environment.json" \
+          --iteration-data "./postman/iteration.json" \
+
 
