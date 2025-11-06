@@ -1,0 +1,12 @@
+name: Newman API Tests
+on:
+  push:
+    branches: ["main"]
+  
+  jobs:
+   run-api-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2

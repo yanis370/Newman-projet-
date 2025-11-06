@@ -1,0 +1,476 @@
+{
+	"info": {
+		"_postman_id": "a2065957-3daa-4e23-afb5-864a8aee8a16",
+		"name": "Backend with OTP (alternance)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24869910"
+	},
+	"item": [
+		{
+			"name": "Reister",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Vérifier que le code de retour HTTP est 200.\r",
+							"pm.test(\"Status code is 200\", function () { \r",
+							"    pm.response.to.have.status(200); \r",
+							"});\r",
+							"\r",
+							"//Vérifier que la réponse est au format JSON.\r",
+							"pm.test(\"Response is JSON\", function () {\r",
+							"    pm.response.to.be.json;\r",
+							"}); \r",
+							"\r",
+							"\r",
+							"const bodyResponse = pm.response.json();\r",
+							"\r",
+							"//Vérifier que le corps de la réponse contient les clés 'msg' et 'otp'\r",
+							"pm.test(\"Response body contains 'msg' and 'otp'\", function () {\r",
+							"    pm.expect(bodyResponse).to.have.property('msg');\r",
+							"    pm.expect(bodyResponse).to.have.property('otp');\r",
+							"});\r",
+							"\r",
+							"//Vérifier que 'msg' contient le mot 'créé' ou 'envoyé'.\r",
+							"pm.test(\"Message contains 'créé' or 'envoyé'\", function () {\r",
+							"    pm.expect(bodyResponse.msg).to.match(/créé|envoyé/);\r",
+							"});\r",
+							"\r",
+							"//S’assurer que le champ 'otp' est une chaîne de 6 chiffres.\r",
+							"pm.test(\"OTP is a 6-digit string\", function () {\r",
+							"    pm.expect(bodyResponse.otp).to.match(/^\\d{6}$/); // Regex to check for 6 digits\r",
+							"})\r",
+							"\r",
+							"// Store OTP in environment variable for later use\r",
+							"pm.environment.set(\"OTP\", bodyResponse.otp); "
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/api/auth/register",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify OTP",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Vérifier que le code HTTP est 200.\r",
+							"if (pm.response.code === 200) {\r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    //Vérifier que la réponse contient la clé 'msg'\r",
+							"    pm.test(\"Response contains 'msg' key\", function () {\r",
+							"        pm.response.to.have.jsonBody('msg');\r",
+							"    })\r",
+							"\r",
+							"\r",
+							"    //Vérifier que le message contient le mot 'succès' ou 'vérifié'.\r",
+							"    pm.test(\"Response message contains 'succès' or 'vérifié'\", function () {\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData.msg).to.include.oneOf(['succès', 'vérifié']);\r",
+							"    })\r",
+							"\r",
+							"}\r",
+							"\r",
+							"//Tester le cas d’un OTP erroné et s’assurer que la réponse est 400 avec un message d’erreur approprié.\r",
+							"if (pm.response.code === 400) {\r",
+							"    pm.test(\"OTP is incorrect, status code is 400\", function () {\r",
+							"        pm.expect(pm.response.json().msg).to.eql(\"OTP invalide\")\r",
+							"    })\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"otp\": \"{{OTP}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/api/auth/verify-otp",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"verify-otp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//• Vérifier que le code de retour est 200.\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const reesposneBody = pm.response.json();\r",
+							"//• Vérifier que la réponse contient les champs 'msg' et 'token'.\r",
+							"pm.test(\"Response contains 'msg' and 'token'\", function () {\r",
+							"    pm.expect(reesposneBody).to.have.property('msg');\r",
+							"    pm.expect(reesposneBody).to.have.property('token');\r",
+							"})\r",
+							"\r",
+							"//• S’assurer que le token n’est pas vide.\r",
+							"pm.test(\"Token is not empty\", function () {\r",
+							"    pm.expect(reesposneBody.token).to.not.be.empty;\r",
+							"})\r",
+							"\r",
+							"//• Vérifier que le message de succès contient 'Connexion'.\r",
+							"pm.test(\"Success message contains 'Connexion'\", function () {\r",
+							"    pm.expect(reesposneBody.msg).to.include('Connexion');\r",
+							"})\r",
+							"\r",
+							"pm.environment.set(\"token\", reesposneBody.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/api/auth/login",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const {code} = pm.response;\r",
+							"\r",
+							"if(code === 200) { \r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(200));\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Response body contains all required fields\", function() {\r",
+							"        pm.expect(pm.response.json()).to.have.property('_id');\r",
+							"        pm.expect(pm.response.json()).to.have.property('email');\r",
+							"        pm.expect(pm.response.json()).to.have.property('verified');\r",
+							"        pm.expect(pm.response.json()).to.have.property('__v');\r",
+							"       // pm.expect(pm.response.json().email).to.eql(pm.iterationData.get('email'));\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"if(code === 401) {\r",
+							"    pm.test(\"Status code is 401\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(401));\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Response body contains field 'msg'\", function () {\r",
+							"        pm.expect(pm.response.json()).to.have.property('msg');\r",
+							"        pm.expect(pm.response.json().msg).to.equal('Accès refusé');\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/auth/profile",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const {code} = pm.response;\r",
+							"\r",
+							"if(code === 200) { \r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(200));\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Response contains field 'msg'\", function() {\r",
+							"        pm.expect(pm.response.json()).to.have.property('msg');\r",
+							"        pm.expect(pm.response.json().msg).to.contain('mis à jour');\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Response body contains new email address\", function() {\r",
+							"       // pm.expect(pm.response.json().user.email).to.eql(pm.iterationData.get('email'));\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"if(code === 401) {\r",
+							"    pm.test(\"Status code is 401\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(401));\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Response body contains field 'msg'\", function () {\r",
+							"        pm.expect(pm.response.json()).to.have.property('msg');\r",
+							"        pm.expect(pm.response.json().msg).to.equal('Accès refusé');\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"{{newEmail}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/api/auth/profile",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"const {code} = pm.response;\r",
+							"\r",
+							"if(code === 200) { \r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(200));\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Response contains field 'msg'\", function() {\r",
+							"        pm.expect(pm.response.json()).to.have.property('msg');\r",
+							"        pm.expect(pm.response.json().msg).to.contain('supprimé');\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"if(code === 401) {\r",
+							"    pm.test(\"Status code is 401\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(401));\r",
+							"    });\r",
+							"\r",
+							"    pm.test(\"Response body contains field 'msg'\", function () {\r",
+							"        pm.expect(pm.response.json()).to.have.property('msg');\r",
+							"        pm.expect(pm.response.json().msg).to.equal('Accès refusé');\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"if(code === 404) {\r",
+							"    pm.test(\"Status code is 404\", function () {\r",
+							"        pm.expect(pm.response.to.have.status(404));\r",
+							"    });\r",
+							"    \r",
+							"    pm.test(\"Response body contains field 'msg' when ID is invalid\", function () {\r",
+							"        pm.expect(pm.response.json()).to.have.property('msg');\r",
+							"        pm.expect(pm.response.json().msg).to.equal('Utilisateur non trouvé');\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/api/auth/profile",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

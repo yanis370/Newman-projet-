@@ -1,0 +1,19 @@
+[
+    {
+        "email": "paul.pogba@gmail.com",
+        "password": "123456",
+        "newEmail": "paul.new@gmail.com"
+    },
+    {
+        "email": "mohamed.salah@gmail.com",
+        "password": "654321",
+        "newEmail": "mohamed.new@gmail.com"
+    },
+
+    {
+        "email": "cristiano.ronaldo@gmail.com",
+        "password": "789012",
+        "newEmail": "cristiano.new@gmail.com"
+    }   
+
+]
